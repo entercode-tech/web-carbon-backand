@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Resources\GuestResource;
 use App\Http\Controllers\Controller;
 use App\Models\Guest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class GuestController extends Controller
@@ -32,31 +34,42 @@ class GuestController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'first_name' => ['required'],
-            'last_name' => ['required'],
-            'location' => ['required'],
-            'email' => ['email'],
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'first_name' => ['required'],
+                'last_name' => ['required'],
+                'location' => ['required'],
+                'email' => ['email'],
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation Error',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $data = $request->only(['first_name', 'last_name', 'location', 'email']);
+            $data['uniq_id'] = generateUuid();
+
+            DB::beginTransaction();
+            $guest = Guest::create($data);
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Guest created successfully',
+                'data' => new GuestResource($guest),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation Error',
-                'errors' => $validator->errors(),
-            ], 422);
+                'message' => 'Guest creation failed',
+            ], 500);
         }
-
-        $data = $request->only(['first_name', 'last_name', 'location', 'email']);
-        $data['uniq_id'] = generateUuid();
-
-        $guest = Guest::create($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Guest created successfully',
-            'data' => new GuestResource($guest),
-        ]);
     }
 
     /**
@@ -80,21 +93,31 @@ class GuestController extends Controller
      */
     public function destroy(string $id)
     {
-        // delete guest
-        $guest = Guest::where('id', $id)->first();
+        try {
+            $guest = Guest::where('id', $id)->first();
 
-        if (!$guest) {
+            if (!$guest) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Guest not found',
+                ], 404);
+            }
+
+            DB::beginTransaction();
+            $guest->delete();
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Guest deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Guest not found',
-            ], 404);
+                'message' => 'Guest deletion failed',
+            ], 500);
         }
-
-        $guest->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Guest deleted successfully',
-        ]);
     }
 }

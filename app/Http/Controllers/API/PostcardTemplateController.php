@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PostcardTemplateResource;
 use App\Models\PostcardTemplate;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class PostcardTemplateController extends Controller
@@ -32,34 +34,44 @@ class PostcardTemplateController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required'],
-            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => ['required'],
+                'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation Error',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $url = uploadImage($request->image, 'templates');
+
+            $data = $request->only(['name']);
+            $data['image_path'] = $url;
+            $data['uniq_id'] = generateUuid();
+
+            DB::beginTransaction();
+            $postcardTemplate = PostcardTemplate::create($data);
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Postcard Template created successfully',
+                'data' => new PostcardTemplateResource($postcardTemplate),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            deleteImage($url);
+            Log::error($e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation Error',
-                'errors' => $validator->errors(),
-            ], 422);
+                'message' => 'Postcard Template creation failed',
+            ], 500);
         }
-
-        $imageName = time() . '.' . $request->image->extension();
-        $request->image->storeAs('public/images/templates', $imageName);
-        $url = asset('storage/images/templates/' . $imageName);
-
-        $data = $request->only(['name']);
-        $data['image_path'] = $url;
-        $data['uniq_id'] = generateUuid();
-
-        $postcardTemplate = PostcardTemplate::create($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Postcard Template created successfully',
-            'data' => new PostcardTemplateResource($postcardTemplate),
-        ]);
     }
 
     /**
@@ -75,35 +87,57 @@ class PostcardTemplateController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required']
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => ['required'],
+                'image' => ['image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation Error',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $postcardTemplate = PostcardTemplate::where('id', $id)->first();
+
+            if (!$postcardTemplate) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Postcard Template not found',
+                ], 404);
+            }
+
+            $data = $request->only(['name']);
+
+            if ($request->image) {
+                $url = uploadImage($request->image, 'templates');
+                $data['image_path'] = $url;
+                $old_image_path = $postcardTemplate->image_path;
+            }
+
+            DB::beginTransaction();
+            $postcardTemplate->update($data);
+            DB::commit();
+
+            if ($request->image) deleteImage($old_image_path);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Postcard Template updated successfully',
+                'data' => new PostcardTemplateResource($postcardTemplate),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if ($request->image) deleteImage($url);
+            Log::error($e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation Error',
-                'errors' => $validator->errors(),
-            ], 422);
+                'message' => 'Postcard Template update failed',
+            ], 500);
         }
-
-        $postcardTemplate = PostcardTemplate::where('id', $id)->first();
-
-        if (!$postcardTemplate) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Postcard Template not found',
-            ], 404);
-        }
-
-        $data = $request->only(['name']);
-        $postcardTemplate->update($data);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Postcard Template updated successfully',
-            'data' => new PostcardTemplateResource($postcardTemplate),
-        ]);
     }
 
     /**
@@ -112,19 +146,32 @@ class PostcardTemplateController extends Controller
     public function destroy(string $id)
     {
         $postcardTemplate = PostcardTemplate::where('id', $id)->first();
+        try {
 
-        if (!$postcardTemplate) {
+            if (!$postcardTemplate) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Postcard Template not found',
+                ], 404);
+            }
+
+            DB::beginTransaction();
+            $postcardTemplate->delete();
+            DB::commit();
+
+            deleteImage($postcardTemplate->image_path);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Postcard Template deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Postcard Template not found',
-            ], 404);
+                'message' => 'Postcard Template deletion failed',
+            ], 500);
         }
-
-        $postcardTemplate->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Postcard Template deleted successfully',
-        ]);
     }
 }

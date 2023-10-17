@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -18,67 +20,86 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'string|required|email',
-            'password' => 'string|required',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'email' => 'string|required|email',
+                'password' => 'string|required',
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $credentials = $request->only('email', 'password');
+
+            $token = Auth::attempt($credentials);
+
+            if (!$token) {
+                return response()->json([
+                    "status" => false,
+                    "message" => "Unauthorized"
+                ], 401);
+            }
+
             return response()->json([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $credentials = $request->only('email', 'password');
-
-        $token = Auth::attempt($credentials);
-
-        if (!$token) {
+                "status" => true,
+                "message" => "Login Success",
+                "data" => [
+                    'access_token' => $token,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
             return response()->json([
                 "status" => false,
-                "message" => "Unauthorized"
-            ], 401);
+                "message" => 'Login Failed'
+            ], 500);
         }
-
-        return response()->json([
-            "status" => true,
-            "message" => "Login Success",
-            "data" => [
-                'access_token' => $token,
-            ]
-        ]);
     }
 
     public function register(Request $request)
     {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255|min:3',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:6|confirmed:password_confirmation',
+            ]);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|min:3',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed:password_confirmation',
-        ]);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
 
-        if ($validator->fails()) {
+            DB::beginTransaction();
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'uniq_id' => generateUuid(),
+            ]);
+            DB::commit();
+
             return response()->json([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
+                "status" => true,
+                'message' => 'User created successfully',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+            return response()->json([
+                "status" => false,
+                "message" => 'Registration failed'
+            ], 500);
         }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        return response()->json([
-            "status" => true,
-            'message' => 'User created successfully',
-            'data' => $user
-        ]);
     }
 
     public function me()

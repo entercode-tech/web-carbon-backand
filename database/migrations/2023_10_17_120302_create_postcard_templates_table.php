@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('uniq_id')->unique();
             $table->string('name');
-            $table->string('image_path');
+            $table->string('image_path')->nullable();
             $table->timestamps();
         });
     }
