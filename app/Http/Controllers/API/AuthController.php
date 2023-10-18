@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Mail\SendEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -108,11 +109,12 @@ class AuthController extends Controller
     {
         try {
             $user = Auth::user();
+            $user->load('roles');
 
             return response()->json([
                 "status" => true,
                 'message' => 'Success',
-                'data' => $user
+                'data' => new UserResource($user)
             ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Role;
+use Spatie\Permission\Models\Role;
 use App\Models\Guest;
 
 class DatabaseSeeder extends Seeder
@@ -19,12 +19,14 @@ class DatabaseSeeder extends Seeder
             'name' => 'admin'
         ]);
 
-        \App\Models\User::factory()->create([
+        $user = \App\Models\User::factory()->create([
             'uniq_id' => generateUuid(),
             'name' => 'admin',
             'email' => 'admin@admin.com',
             'password' => bcrypt('P@ssw0rd'),
         ]);
+
+        $user->assignRole('admin');
 
         Guest::create([
             'uniq_id' => generateUuid(),
