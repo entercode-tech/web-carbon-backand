@@ -22,11 +22,19 @@ class PostcardTemplateController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Postcard Templates retrieved successfully',
-            'data' => PostcardTemplateResource::collection(PostcardTemplate::all()),
-        ]);
+        try {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Postcard Templates retrieved successfully',
+                'data' => PostcardTemplateResource::collection(PostcardTemplate::all()),
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Postcard Templates retrieval failed',
+            ], 500);
+        }
     }
 
     /**

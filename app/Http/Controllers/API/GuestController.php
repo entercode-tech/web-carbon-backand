@@ -22,11 +22,20 @@ class GuestController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Guests retrieved successfully',
-            'data' => GuestResource::collection(Guest::all()),
-        ]);
+        try {
+            $data = GuestResource::collection(Guest::all());
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Guests retrieved successfully',
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Guests retrieval failed',
+            ], 500);
+        }
     }
 
     /**

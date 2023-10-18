@@ -29,3 +29,8 @@ function deleteImage($pathName)
         Log::error($th->getMessage());
     }
 }
+
+function generateRandomToken()
+{
+    return bin2hex(random_bytes(32));
+}

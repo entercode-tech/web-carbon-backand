@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\GuestController;
 use App\Http\Controllers\API\PostcardTemplateController;
+use App\Mail\SendEmail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +27,8 @@ Route::prefix('v1')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:api');
     Route::post('refresh-token', [AuthController::class, 'refresh'])->middleware('auth:api');
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
     // Guest Routes
     Route::get('guests', [GuestController::class, 'index']);
@@ -39,7 +44,23 @@ Route::prefix('v1')->group(function () {
 
 // Test Route
 Route::get('test', function () {
-    return response()->json([
-        'message' => generateUuid()
-    ]);
+    try {
+        $subject = "Reset Password Request";
+        $content = [
+            'url' => 'http://localhost:8000/reset-password?token=1234567890',
+        ];
+
+        Mail::to('ajipunk008@gmail.com')->send(new SendEmail($subject, 'emails.reset-password', $content));
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Email sent successfully',
+        ]);
+    } catch (\Throwable $th) {
+        Log::error($th->getMessage());
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Email sent failed',
+        ], 500);
+    }
 });
