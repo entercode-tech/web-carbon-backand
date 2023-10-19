@@ -88,12 +88,13 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
                 'uniq_id' => generateUuid(),
             ]);
+            $user->assignRole('admin');
             DB::commit();
 
             return response()->json([
                 "status" => true,
                 'message' => 'User created successfully',
-                'data' => $user
+                'data' => new UserResource($user)
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
