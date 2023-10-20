@@ -32,9 +32,9 @@ Route::prefix('v1')->group(function () {
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
     // Guest Routes
-    Route::get('guests', [GuestController::class, 'index']);
+    Route::get('guests', [GuestController::class, 'index'])->middleware('jwt.verify');
     Route::post('guests', [GuestController::class, 'store']);
-    Route::delete('guests/{id}', [GuestController::class, 'destroy']);
+    Route::delete('guests/{id}', [GuestController::class, 'destroy'])->middleware('jwt.verify');
 
     // Postcard Template Routes
     Route::get('postcard-templates', [PostcardTemplateController::class, 'index']);
@@ -45,6 +45,7 @@ Route::prefix('v1')->group(function () {
     // Postcard
     Route::get('postcards', [PostcardController::class, 'index']);
     Route::post('postcards', [PostcardController::class, 'store']);
+    Route::post('postcards/{id}/send-email', [PostcardController::class, 'sendEmail']);
 });
 
 // Test Route

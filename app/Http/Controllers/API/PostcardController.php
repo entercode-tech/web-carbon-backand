@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use App\Http\Resources\PostcardResource;
 use App\Models\Postcard;
 use App\Http\Controllers\Controller;
+use App\Mail\SendEmail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class PostcardController extends Controller
@@ -101,5 +103,39 @@ class PostcardController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Send postcard to email.
+     */
+    public function sendEmail(string $id)
+    {
+        try {
+            $postcard = Postcard::where('uniq_id', $id)->first();
+
+            if (!$postcard) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Postcard not found',
+                ], 404);
+            }
+
+            $guest = $postcard->guest;
+            $content = [
+                'username' => $guest->name,
+            ];
+            Mail::to($guest->email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, [$postcard->file_carbon_path]));
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Postcard sent successfully',
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Postcard sending failed',
+            ], 500);
+        }
     }
 }

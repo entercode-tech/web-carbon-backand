@@ -4,18 +4,14 @@ namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\GuestResource;
-use App\Http\Controllers\Controller;
 use App\Models\Guest;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class GuestController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('jwt.verify');
-    }
 
     /**
      * Display a listing of the resource.

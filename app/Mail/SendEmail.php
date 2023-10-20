@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -16,15 +17,17 @@ class SendEmail extends Mailable
     public $subject;
     public $view;
     public array $content;
+    public $attachmentFile;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($subject, $view, $content)
+    public function __construct($subject, $view, $content, $attachmentFile = [])
     {
         $this->subject = $subject;
         $this->view = $view;
         $this->content = $content;
+        $this->attachmentFile = $attachmentFile;
     }
 
     /**
@@ -55,6 +58,11 @@ class SendEmail extends Mailable
      */
     public function attachments(): array
     {
-        return [];
+        $attachmentData = [];
+        foreach ($this->attachmentFile as $attachment) {
+            $attachmentData[] = Attachment::fromStorage($attachment);
+        }
+
+        return $attachmentData;
     }
 }
