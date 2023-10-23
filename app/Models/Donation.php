@@ -5,16 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Postcard extends Model
+class Donation extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'uniq_id',
-        'code',
+        'order_id',
         'guest_id',
-        'file_carbon_path',
-        'metric_tons',
+        'postcard_id',
+        'amount',
+        'currency',
+        'status',
     ];
 
     public function guest()
@@ -22,8 +24,8 @@ class Postcard extends Model
         return $this->belongsTo(Guest::class);
     }
 
-    public function donations()
+    public function postcard()
     {
-        return $this->hasMany(Donation::class);
+        return $this->belongsTo(Postcard::class);
     }
 }

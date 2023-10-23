@@ -16,4 +16,9 @@ class Guest extends Model
         'location',
         'email',
     ];
+
+    public function donations()
+    {
+        return $this->hasMany(Donation::class);
+    }
 }

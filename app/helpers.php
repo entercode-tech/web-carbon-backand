@@ -44,3 +44,14 @@ function uniqCode($existingCodes)
         uniqCode($existingCodes);
     }
 }
+
+function generateOrderId()
+{
+    $orderId = "trx-" . time();
+    return $orderId;
+}
+
+function metric_value($metric_tons)
+{
+    return $metric_tons * 100000;
+}
