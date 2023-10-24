@@ -39,7 +39,6 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info($request->all());
         if ($request->transaction_status === "settlement" && $request->status_message === "midtrans payment notification") {
             try {
                 $order_id = $request->order_id;
