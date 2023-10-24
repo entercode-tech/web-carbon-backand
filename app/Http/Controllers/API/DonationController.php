@@ -88,10 +88,13 @@ class DonationController extends Controller
             ]);
             DB::commit();
 
+            $donationResource = new DonationResource($donation);
+            $payment_url = createMidtransTransaction($donationResource->order_id, $donationResource->amount);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Donation created successfully',
-                'data' => new DonationResource($donation),
+                'data' => $payment_url,
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();

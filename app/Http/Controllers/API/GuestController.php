@@ -21,14 +21,14 @@ class GuestController extends Controller
         try {
             $data = GuestResource::collection(Guest::all());
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Guests retrieved successfully',
                 'data' => $data,
             ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Guests retrieval failed',
             ], 500);
         }
@@ -49,7 +49,7 @@ class GuestController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Validation Error',
                     'errors' => $validator->errors(),
                 ], 422);
@@ -63,7 +63,7 @@ class GuestController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Guest created successfully',
                 'data' => new GuestResource($guest),
             ]);
@@ -71,7 +71,7 @@ class GuestController extends Controller
             DB::rollBack();
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Guest creation failed',
             ], 500);
         }
@@ -103,7 +103,7 @@ class GuestController extends Controller
 
             if (!$guest) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Guest not found',
                 ], 404);
             }
@@ -113,14 +113,14 @@ class GuestController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Guest deleted successfully',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Guest deletion failed',
             ], 500);
         }

@@ -8,6 +8,7 @@ use App\Http\Controllers\API\PostcardTemplateController;
 use App\Http\Controllers\API\PostcardController;
 use App\Http\Controllers\API\IncludedFileController;
 use App\Http\Controllers\API\DonationController;
+use App\Http\Controllers\API\TransactionController;
 use App\Mail\SendEmail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -58,6 +59,10 @@ Route::prefix('v1')->group(function () {
     // Donation
     Route::get('donations', [DonationController::class, 'index']);
     Route::post('donations', [DonationController::class, 'store']);
+
+    // Transaction
+    Route::get('transactions', [TransactionController::class, 'index']);
+    Route::post('transactions', [TransactionController::class, 'store']);
 });
 
 // Test Route

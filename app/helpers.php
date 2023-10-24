@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 function generateUuid()
 {
@@ -54,4 +56,26 @@ function generateOrderId()
 function metric_value($metric_tons)
 {
     return $metric_tons * 100000;
+}
+
+function createMidtransTransaction($order_id, $amount)
+{
+    try {
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION');
+        Config::$isSanitized = env('MIDTRANS_IS_SANITIZED');
+        Config::$overrideNotifUrl = env('MIDTRANS_NOTIFICATION_URL');
+
+        $data = [
+            'transaction_details' => [
+                'order_id' => $order_id,
+                'gross_amount' => $amount,
+            ],
+        ];
+
+        $payment = Snap::createTransaction($data)->redirect_url;
+        return $payment;
+    } catch (\Throwable $th) {
+        Log::error($th->getMessage());
+    }
 }

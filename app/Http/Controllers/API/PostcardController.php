@@ -22,14 +22,14 @@ class PostcardController extends Controller
         try {
             $data = PostcardResource::collection(Postcard::all());
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Postcards retrieved successfully',
                 'data' => $data,
             ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Postcards retrieval failed',
             ], 500);
         }
@@ -49,7 +49,7 @@ class PostcardController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Validation Error',
                     'errors' => $validator->errors(),
                 ], 422);
@@ -66,7 +66,7 @@ class PostcardController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Postcard created successfully',
                 'data' => new PostcardResource($postcard),
             ]);
@@ -75,7 +75,7 @@ class PostcardController extends Controller
             deleteImage($url);
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Postcard creation failed',
             ], 500);
         }
@@ -115,7 +115,7 @@ class PostcardController extends Controller
 
             if (!$postcard) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Postcard not found',
                 ], 404);
             }
@@ -127,13 +127,13 @@ class PostcardController extends Controller
             Mail::to($guest->email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, [$postcard->file_carbon_path]));
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Postcard sent successfully',
             ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Postcard sending failed',
             ], 500);
         }

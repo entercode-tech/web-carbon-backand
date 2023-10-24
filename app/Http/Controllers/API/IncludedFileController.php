@@ -24,14 +24,14 @@ class IncludedFileController extends Controller
     {
         try {
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Included Files retrieved successfully',
                 'data' => IncludedFileResource::collection(IncludedFile::all()),
             ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Included Files retrieval failed',
             ], 500);
         }
@@ -50,7 +50,7 @@ class IncludedFileController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Validation Error',
                     'errors' => $validator->errors(),
                 ], 422);
@@ -67,7 +67,7 @@ class IncludedFileController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Included file created successfully',
                 'data' => new IncludedFileResource($includedFile),
             ]);
@@ -76,7 +76,7 @@ class IncludedFileController extends Controller
             deleteImage($url);
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Included file creation failed',
             ], 500);
         }
@@ -103,7 +103,7 @@ class IncludedFileController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Validation Error',
                     'errors' => $validator->errors(),
                 ], 422);
@@ -113,7 +113,7 @@ class IncludedFileController extends Controller
 
             if (!$includedFile) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Included file not found',
                 ], 404);
             }
@@ -133,7 +133,7 @@ class IncludedFileController extends Controller
             if ($request->image) deleteImage($old_image_path);
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Included file updated successfully',
                 'data' => new IncludedFileResource($includedFile),
             ]);
@@ -142,7 +142,7 @@ class IncludedFileController extends Controller
             if ($request->image) deleteImage($url);
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Included file update failed',
             ], 500);
         }
@@ -158,7 +158,7 @@ class IncludedFileController extends Controller
 
             if (!$includedFile) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Included file not found',
                 ], 404);
             }
@@ -170,14 +170,14 @@ class IncludedFileController extends Controller
             deleteImage($includedFile->image_path);
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Included file deleted successfully',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Included file deletion failed',
             ], 500);
         }
