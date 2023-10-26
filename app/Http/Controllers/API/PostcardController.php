@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use App\Models\IncludedFile;
 
 class PostcardController extends Controller
 {
@@ -108,7 +109,7 @@ class PostcardController extends Controller
     /**
      * Send postcard to email.
      */
-    public function sendEmail(string $id)
+    public function sendEmail(Request $request, string $id)
     {
         try {
             $postcard = Postcard::where('uniq_id', $id)->first();
@@ -124,7 +125,16 @@ class PostcardController extends Controller
             $content = [
                 'username' => $guest->name,
             ];
-            Mail::to($guest->email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, [$postcard->file_carbon_path]));
+            $attachment = [$postcard->file_carbon_path];
+
+            if ($request->included_files) {
+                $included_file_ids = $request->included_files;
+                $included_files = IncludedFile::whereIn('id', $included_file_ids)->get();
+                $image_paths = $included_files->pluck('image_path')->toArray();
+                $attachment = array_merge($attachment, $image_paths);
+            }
+
+            Mail::to($guest->email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, $attachment));
 
             return response()->json([
                 'status' => true,

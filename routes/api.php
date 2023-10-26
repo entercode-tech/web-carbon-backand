@@ -66,24 +66,24 @@ Route::prefix('v1')->group(function () {
 });
 
 // Test Route
-Route::get('test', function () {
-    try {
-        $subject = "Reset Password Request";
-        $content = [
-            'url' => 'http://localhost:8000/reset-password?token=1234567890',
-        ];
+// Route::get('test', function () {
+//     try {
+//         $subject = "Reset Password Request";
+//         $content = [
+//             'url' => 'http://localhost:8000/reset-password?token=1234567890',
+//         ];
 
-        Mail::to('ajipunk008@gmail.com')->send(new SendEmail($subject, 'emails.reset-password', $content));
+//         Mail::to('ajipunk008@gmail.com')->send(new SendEmail($subject, 'emails.reset-password', $content));
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Email sent successfully',
-        ]);
-    } catch (\Throwable $th) {
-        Log::error($th->getMessage());
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Email sent failed',
-        ], 500);
-    }
-});
+//         return response()->json([
+//             'status' => 'success',
+//             'message' => 'Email sent successfully',
+//         ]);
+//     } catch (\Throwable $th) {
+//         Log::error($th->getMessage());
+//         return response()->json([
+//             'status' => 'error',
+//             'message' => 'Email sent failed',
+//         ], 500);
+//     }
+// });
