@@ -69,7 +69,7 @@ function createMidtransTransaction($order_id, $amount)
         $data = [
             'transaction_details' => [
                 'order_id' => $order_id,
-                'gross_amount' => $amount,
+                'gross_amount' => round($amount),
             ],
         ];
 
