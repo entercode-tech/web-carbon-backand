@@ -130,8 +130,8 @@ class PostcardController extends Controller
             if ($request->included_files) {
                 $included_file_ids = $request->included_files;
                 $included_files = IncludedFile::whereIn('id', $included_file_ids)->get();
-                $image_paths = $included_files->pluck('image_path')->toArray();
-                $attachment = array_merge($attachment, $image_paths);
+                $file_paths = $included_files->pluck('file_path')->toArray();
+                $attachment = array_merge($attachment, $file_paths);
             }
 
             Mail::to($guest->email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, $attachment));
