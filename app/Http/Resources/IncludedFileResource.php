@@ -14,12 +14,12 @@ class IncludedFileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $url = $this->image_path ? asset('storage/' . str_replace('public/', '', $this->image_path)) : null;
+        $url = $this->file_path ? asset('storage/' . str_replace('public/', '', $this->file_path)) : null;
         return [
             'id' => $this->id,
             'uniq_id' => $this->uniq_id,
             'name' => $this->name,
-            'image_path' => $url,
+            'file_path' => $url,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

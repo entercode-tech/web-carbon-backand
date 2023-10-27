@@ -12,6 +12,6 @@ class IncludedFile extends Model
     protected $fillable = [
         'uniq_id',
         'name',
-        'image_path',
+        'file_path',
     ];
 }

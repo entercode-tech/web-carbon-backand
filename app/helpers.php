@@ -22,6 +22,17 @@ function uploadImage($image, $path)
     }
 }
 
+function uploadFile($file, $path)
+{
+    try {
+        $fileName = time() . '.' . $file->extension();
+        $url = Storage::putFileAs('public/files/' . $path, $file, $fileName);
+        return $url;
+    } catch (\Throwable $th) {
+        Log::error($th->getMessage());
+    }
+}
+
 function deleteImage($pathName)
 {
     try {
