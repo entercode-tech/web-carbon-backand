@@ -129,6 +129,7 @@ class PostcardController extends Controller
     {
         try {
             $postcard = Postcard::where('uniq_id', $id)->first();
+            $email = $request->email;
 
             if (!$postcard) {
                 return response()->json([
@@ -150,7 +151,11 @@ class PostcardController extends Controller
                 $attachment = array_merge($attachment, $file_paths);
             }
 
-            Mail::to($guest->email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, $attachment));
+            if ($email) {
+                Mail::to($email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, $attachment));
+            } else {
+                Mail::to($guest->email)->send(new SendEmail('Postcard', 'emails.send-postcard', $content, $attachment));
+            }
 
             return response()->json([
                 'status' => true,
