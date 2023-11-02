@@ -18,10 +18,26 @@ class PostcardController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+
+        $filter = [
+            'code' => $request->code,
+        ];
+
         try {
-            $data = PostcardResource::collection(Postcard::all());
+            if (count(array_filter($filter)) == 0) {
+                $data = Postcard::orderBy('created_at', 'desc')->get();
+            } else {
+                $data = Postcard::where(function ($query) use ($filter) {
+                    foreach ($filter as $key => $value) {
+                        if ($value) {
+                            $query->where($key, 'like', '%' . $value . '%');
+                        }
+                    }
+                })->orderBy('created_at', 'desc')->get();
+            }
+
             return response()->json([
                 'status' => true,
                 'message' => 'Postcards retrieved successfully',
