@@ -41,7 +41,7 @@ class PostcardController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Postcards retrieved successfully',
-                'data' => $data,
+                'data' => PostcardResource::collection($data),
             ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
