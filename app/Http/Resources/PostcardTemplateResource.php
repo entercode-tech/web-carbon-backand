@@ -14,7 +14,7 @@ class PostcardTemplateResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $url = $this->image_path ? asset('storage/' . str_replace('public/', '', $this->image_path)) : null;
+        $url = $this->image_path ? asset('storage/' . $this->image_path) : null;
         return [
             'id' => $this->id,
             'uniq_id' => $this->uniq_id,

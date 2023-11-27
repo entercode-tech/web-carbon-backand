@@ -14,7 +14,7 @@ class PostcardResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $url = $this->file_carbon_path ? asset('storage/' . str_replace('public/', '', $this->file_carbon_path)) : null;
+        $url = $this->file_carbon_path ? asset('storage/' . $this->file_carbon_path) : null;
         return [
             'id' => $this->id,
             'uniq_id' => $this->uniq_id,
