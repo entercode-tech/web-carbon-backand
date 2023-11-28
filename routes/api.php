@@ -35,7 +35,7 @@ Route::prefix('v1')->group(function () {
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
     // Guest Routes
-    Route::get('guests', [GuestController::class, 'index'])->middleware('jwt.verify');
+    Route::get('guests', [GuestController::class, 'index']);
     Route::post('guests', [GuestController::class, 'store']);
     Route::delete('guests/{id}', [GuestController::class, 'destroy'])->middleware('jwt.verify');
 
