@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Mail;
 |
 */
 
-Route::prefix('v1')->group(function () {
+Route::group(['prefix'=>'v1','middleware'=>'mycors'],function () {
     // Auth Routes
     Route::post('admin/login', [AuthController::class, 'login']);
     Route::get('me', [AuthController::class, 'me'])->middleware('auth:api');
